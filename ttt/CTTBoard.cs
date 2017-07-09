@@ -58,6 +58,7 @@ namespace ttt
             }
             if (found)
                 return true;
+            //cj
             if ( x == y || y + x == 2)
             {
                 found = true;
