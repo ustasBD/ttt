@@ -66,15 +66,29 @@ namespace ttt
             if (found)
                 return true;
             //cj
-            if ( x == y || y + x == 2)
+            if (x == y)
             {
-                 found = true;
+                found = true;
                 prev = board[0, 0];
-                for (int xx = 0; xx < 3 && found; xx++)
-                    found = (board[xx, xx] == prev && board[xx, 2 - xx] == prev);
+                for (int xx = 1; xx < 3 && found; xx++)
+                    found = (board[xx, xx] == prev);
+                if (found)
+                    return found;
             }
-            return found;    
+
+            if (y + x == 2)
+            {
+                found = true;
+                prev = board[0, 2];
+                for (int xx = 1; xx < 3 && found; xx++)
+                {
+                    found = board[xx, 2 - xx] == prev;
+                }
+            }
+
+            return found;
         }
+
         public static Player InvPlayer(Player pl)
         {
             switch(pl)
