@@ -33,14 +33,21 @@ namespace ttt
         {
             _applyStep(_board,(byte)pl, x, y);
         }
-        
+
+        public byte[,] GetBoard()
+        {
+            return _board;
+        }
+           
+
+
         private static void _applyStep(byte[,] board, byte Val, int x, int y)
         {
             if (board[x,y] != 0)
                 throw new Exception("Cell is busy");
             board[x,y] = Val;
         }
-        private static bool _checkWin(byte[,] board, int x, int  y)
+        public static bool _checkWin(byte[,] board, int x, int  y)
         {
             byte prev = board[0, y];
             bool found = true;
@@ -61,7 +68,7 @@ namespace ttt
             //cj
             if ( x == y || y + x == 2)
             {
-                found = true;
+                 found = true;
                 prev = board[0, 0];
                 for (int xx = 0; xx < 3 && found; xx++)
                     found = (board[xx, xx] == prev && board[xx, 2 - xx] == prev);
