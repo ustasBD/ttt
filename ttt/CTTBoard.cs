@@ -62,24 +62,24 @@ namespace ttt
         }
         public bool CheckWin()
         {
-            if (_board[0, 0] == _board[0, 1] && _board[0, 1] == _board[0, 2])
+            if (_board[0, 0] !=0 && _board[0, 0] == _board[0, 1] && _board[0, 0] == _board[0, 2])
                 return true;
-            if (_board[1, 0] == _board[1, 1] && _board[1, 1] == _board[1, 2])
+            if (_board[1, 0] !=0 && _board[1, 0] == _board[1, 1] && _board[1, 0] == _board[1, 2])
                 return true;
-            if (_board[2, 0] == _board[2, 1] && _board[2, 1] == _board[2, 2])
+            if (_board[2, 0] !=0 && _board[2, 0] == _board[2, 1] && _board[2, 0] == _board[2, 2])
                 return true;
 
-            if (_board[0, 0] == _board[1, 0] && _board[1, 0] == _board[2, 0])
+            if (_board[0, 0] !=0 && _board[0, 0] == _board[1, 0] && _board[0, 0] == _board[2, 0])
                 return true;
-            if (_board[0, 1] == _board[1, 1] && _board[1, 1] == _board[2, 1])
+            if (_board[0, 1] !=0 && _board[0, 1] == _board[1, 1] && _board[0, 1] == _board[2, 1])
                 return true;
-            if (_board[0, 2] == _board[1, 2] && _board[1, 2] == _board[2, 2])
+            if (_board[0, 2] !=0 && _board[0, 2] == _board[1, 2] && _board[0, 2] == _board[2, 2])
                 return true;
             
 
-            if (_board[0, 0] == _board[1, 1] && _board[1, 1] == _board[2, 2])
+            if (_board[0, 0] !=0 && _board[0, 0] == _board[1, 1] && _board[0, 0] == _board[2, 2])
                 return true;
-            if (_board[0, 2] == _board[1, 1] && _board[1, 1] == _board[2, 0])
+            if (_board[0, 2] != 0 && _board[0, 2] == _board[1, 1] && _board[0, 2] == _board[2, 0])
                 return true;
 
 
