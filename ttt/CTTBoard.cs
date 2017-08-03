@@ -6,110 +6,155 @@ using System.Threading.Tasks;
 
 namespace ttt
 {
-    public class CTTBoard
+    public class CTTBoard : ICloneable
     {
         public enum Player : byte
         {
             PlayerX = (byte)'X',
-            PlayerY = (byte)'Y'
+            PlayerO = (byte)'O'
         }
-        private byte[,] _board = new byte[3,3];
         public CTTBoard()
         {
             Reset();
         }
+        private byte[,] _board = new byte[3, 3];
         public void Reset()
         {
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 3; j++)
-                    _board[i,j] = 0;
+                    _board[i, j] = 0;
+        }
+        public byte GetCell(int x, int y)
+        {
+            return _board[x, y];
         }
         public void Dump2Con()
         {
-
+            for (var y = 0; y < 3; y++)
+            {
+                for (var x = 0; x < 3; x++)
+                    Console.Write((char)_board[x, y]);
+                Console.WriteLine();
+            }
         }
-
-        public void ApplyStep(Player pl,int x, int y)
+        public void CleanCell(int x, int y)
         {
-            _applyStep(_board,(byte)pl, x, y);
+            _board[x, y] = 0;
         }
-
-        public byte[,] GetBoard()
+        public void ApplyStep(Player pl, int x, int y)
         {
-            return _board;
+            _applyStep(_board, (byte)pl, x, y);
         }
-           
-
-
         private static void _applyStep(byte[,] board, byte Val, int x, int y)
         {
-            if (board[x,y] != 0)
+            if (board[x, y] != 0)
                 throw new Exception("Cell is busy");
-            board[x,y] = Val;
+            board[x, y] = Val;
         }
-        public static bool _checkWin(byte[,] board, int x, int  y)
+        public bool CheckComplete()
         {
-            byte prev = board[0, y];
-            bool found = true;
-            for (int xx = 1; xx < 3 && found; xx++)
-            {
-                found = (prev == board[xx, y]);
-            }
-            if (found)
-                return true;
-            found = true;
-            prev = board[x, 0];
-            for (int yy = 1; yy < 3 && found; yy++)
-            {
-                found = (prev == board[x, yy]);
-            }
-            if (found)
-                return true;
-            //cj
-            if ( x == y || y + x == 2)
-            {
-                 found = true;
-                prev = board[0, 0];
-                for (int xx = 0; xx < 3 && found; xx++)
-                    found = (board[xx, xx] == prev && board[xx, 2 - xx] == prev);
-            }
-            return found;    
+            bool _isEmpty = false;
+            for (int x = 0; x < 3 && !_isEmpty; x++)
+                for (int y = 0; y < 3 && !_isEmpty; y++)
+                    _isEmpty = _board[x, y] == 0;
+            return !_isEmpty;
+
         }
-        public static Player InvPlayer(Player pl)
+        public bool CheckWin()
+        {
+            if (_board[0, 0] == _board[0, 1] && _board[0, 1] == _board[0, 2])
+                return true;
+            if (_board[1, 0] == _board[1, 1] && _board[1, 1] == _board[1, 2])
+                return true;
+            if (_board[2, 0] == _board[2, 1] && _board[2, 1] == _board[2, 2])
+                return true;
+
+            if (_board[0, 0] == _board[1, 0] && _board[1, 0] == _board[2, 0])
+                return true;
+            if (_board[0, 1] == _board[1, 1] && _board[1, 1] == _board[2, 1])
+                return true;
+            if (_board[0, 2] == _board[1, 2] && _board[1, 2] == _board[2, 2])
+                return true;
+            
+
+            if (_board[0, 0] == _board[1, 1] && _board[1, 1] == _board[2, 2])
+                return true;
+            if (_board[0, 2] == _board[1, 1] && _board[1, 1] == _board[2, 0])
+                return true;
+
+
+            return false;
+        }
+
+        public object Clone()
+        {
+            return new CTTBoard() { _board = (byte[,])this._board.Clone()};
+        }
+    }
+    public class CTTHeuristic
+    {
+        private static int _stepAssesmetInfinity = 10;
+        public CTTHeuristic()
+        {
+        }
+        
+      
+        public static CTTBoard.Player InvPlayer(CTTBoard.Player pl)
         {
             switch(pl)
             {
-                case Player.PlayerX: return Player.PlayerY;
-                case Player.PlayerY: return Player.PlayerX;
+                case CTTBoard.Player.PlayerX: return CTTBoard.Player.PlayerO;
+                case CTTBoard.Player.PlayerO: return CTTBoard.Player.PlayerX;
                 default:
                     throw new Exception("Invalid plsayer code");
             }
         } 
-        private  static Tuple<int,Player> _getStepAssesment(byte[,] board, Player pl ,int x, int y, int level)
+        private  static int _getStepAssesment(CTTBoard board, CTTBoard.Player me, CTTBoard.Player pl ,int x, int y, int level)
         {
-            _applyStep(board, (byte)pl, x, y);
-            if (_checkWin(board, x, y))
-                return Tuple.Create(level, pl);
-            level++;
-            var retAss = Tuple.Create(10, pl);
+            board.ApplyStep( pl, x, y);
+            int stepScore = _stepAssesmetInfinity-level;
+            int nopScore = _stepAssesmetInfinity;
 
-            pl = InvPlayer(pl);
+            if (me != pl)
+                stepScore = -stepScore;
+            else
+                nopScore = -nopScore;
 
+            var retAss = -nopScore;
+
+            if (board.CheckWin( ))
+            {
+                //Dump2Con(board);
+                //Console.WriteLine(string.Format("{0},{1}",x,y));
+                board.CleanCell(x, y);
+                return stepScore;
+            }
+            if (board.CheckComplete())
+            {
+                board.CleanCell(x, y);
+                return 0;
+            }
             
             for (int xx = 0;xx < 3; xx++)
                 for(int yy =0; yy <3; yy++)
                 {
-                    if (board[xx, yy] == 0)
+                    if (board.GetCell(xx, yy) == 0)
                     {
-                        var ass = _getStepAssesment(board, pl, xx, yy, level);
-                        if (retAss.Item1 > ass.Item1)
-                            retAss = ass; 
+                        var ass = _getStepAssesment(board, me, InvPlayer(pl), xx, yy, level+1);
+                        if (me != pl)
+                        {
+                            if (retAss < ass)
+                                retAss = ass;
+                        }
+                        else
+                            if (retAss > ass)
+                                retAss = ass;
                     }
                 }
-            board[x, y] = 0;
+            board.CleanCell(x, y);
             return retAss;
         }
-        public int[,]  GetNextStepAssesment(Player pl)
+        public int[,]  GetNextStepAssesment(CTTBoard board, CTTBoard.Player pl)
         {
             var assArr = new int[3, 3];
             Task[] tskList = new Task[9];
@@ -118,27 +163,31 @@ namespace ttt
                 {
                     int xc = x;
                     int yc = y;
-                    tskList[x+y*3] = Task.Factory.StartNew(() => {
-                        Console.WriteLine("{0},{1}",xc, yc);
+                  
+                    {
+                        Console.WriteLine("{0},{1}", xc, yc);
 
-                        if (_board[xc, yc] != 0)
+                        if (board.GetCell(xc, yc) != 0)
+                        {
                             assArr[xc, yc] = -100;
+                        }
                         else
                         {
-                            byte[,] copyBoard = (byte[,])_board.Clone();
-                            var ass = _getStepAssesment(copyBoard, pl, xc, yc, 0);
+                            var copyBoard = (CTTBoard)board.Clone();
+                            var ass = _getStepAssesment(copyBoard, pl, pl, xc, yc, 0);
                             //if (ass != null)
-                                assArr[xc, yc] = (10 - ass.Item1) * ((ass.Item2 == pl) ? 1 : -1);
+                            assArr[xc, yc] = ass;
                         }
-                    });
+                    };
+                    //tskList[x+y*3] = Task.Factory.StartNew(assFunk);
 
                 }
-            Task.WaitAll(tskList);
+            //Task.WaitAll(tskList);
             return assArr;
         }
-        public Tuple<byte, byte> GetNextStep(Player pl)
+        public Tuple<byte, byte> GetNextStep(CTTBoard board, CTTBoard.Player pl)
         {
-            var assArr = GetNextStepAssesment(pl);
+            var assArr = GetNextStepAssesment(board, pl);
             return Tuple.Create((byte)0, (byte)0);
         }
         
